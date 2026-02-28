@@ -9,20 +9,31 @@ export async function GET() {
         Referer: 'https://www.oref.org.il/',
       },
     })
-    if (!res.ok) {
-      throw new Error(`Upstream ${res.status}`)
+
+    const text = await res.text()
+    let body: unknown
+
+    try {
+      body = JSON.parse(text)
+    } catch {
+      body = {
+        error: 'Upstream did not return JSON',
+        status: res.status,
+      }
     }
-    const data = await res.json()
-    return new Response(JSON.stringify(data), {
-      status: 200,
+
+    return new Response(JSON.stringify(body), {
+      status: res.status,
       headers: {
         'Content-Type': 'application/json',
         'Cache-Control': 's-maxage=60, stale-while-revalidate',
       },
     })
-  } catch {
+  } catch (error) {
     return new Response(
-      JSON.stringify({ error: 'Failed to fetch alerts' }),
+      JSON.stringify({
+        error: 'Failed to reach upstream alerts endpoint',
+      }),
       { status: 502, headers: { 'Content-Type': 'application/json' } }
     )
   }

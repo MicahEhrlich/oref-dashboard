@@ -36,6 +36,24 @@ const PanelTitle = styled.span`
   color: ${theme.colors.muted};
 `
 
+const SortToggle = styled.button`
+  font-family: ${theme.fonts.mono};
+  font-size: 10px;
+  color: ${theme.colors.muted};
+  background: transparent;
+  border: 1px solid ${theme.colors.border};
+  border-radius: 999px;
+  padding: 4px 8px;
+  cursor: pointer;
+  transition: border-color 0.2s, color 0.2s, background 0.2s;
+
+  &:hover {
+    border-color: ${theme.colors.red};
+    color: ${theme.colors.red};
+    background: rgba(230, 57, 70, 0.06);
+  }
+`
+
 const SearchWrap = styled.div`
   padding: 12px 24px;
   border-bottom: 1px solid ${theme.colors.border};
@@ -133,6 +151,7 @@ const CountNum = styled.span`
 
 export function CityRankings({ cityStats, selectedCity, onSelectCity }: CityRankingsProps) {
   const [search, setSearch] = useState('')
+  const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc')
   const debouncedSearch = useDebounce(search)
 
   const maxCount = cityStats[0]?.count ?? 1
@@ -141,7 +160,11 @@ export function CityRankings({ cityStats, selectedCity, onSelectCity }: CityRank
     ? cityStats.filter(s => s.city.toLowerCase().includes(debouncedSearch.toLowerCase()))
     : cityStats
 
-  const visible = filtered.slice(0, 50)
+  const sorted = [...filtered].sort((a, b) =>
+    sortOrder === 'desc' ? b.count - a.count : a.count - b.count
+  )
+
+  const visible = sorted.slice(0, 50)
 
   const handleRowClick = (city: string) => {
     onSelectCity(selectedCity === city ? null : city)
@@ -151,7 +174,15 @@ export function CityRankings({ cityStats, selectedCity, onSelectCity }: CityRank
     <Panel>
       <PanelHeader>
         <PanelTitle>City Rankings</PanelTitle>
-        <PanelTitle>{cityStats.length} cities</PanelTitle>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+          <PanelTitle>{cityStats.length} cities</PanelTitle>
+          <SortToggle
+            type="button"
+            onClick={() => setSortOrder(prev => (prev === 'desc' ? 'asc' : 'desc'))}
+          >
+            {sortOrder === 'desc' ? 'Most → Fewest' : 'Fewest → Most'}
+          </SortToggle>
+        </div>
       </PanelHeader>
 
       <SearchWrap>
@@ -164,8 +195,8 @@ export function CityRankings({ cityStats, selectedCity, onSelectCity }: CityRank
       </SearchWrap>
 
       <List>
-        {visible.map(({ city, count }) => {
-          const globalRank = cityStats.findIndex(s => s.city === city) + 1
+        {visible.map(({ city, count }, index) => {
+          const rank = index + 1
           return (
             <CityRow
               key={city}
@@ -176,7 +207,7 @@ export function CityRankings({ cityStats, selectedCity, onSelectCity }: CityRank
               onKeyDown={e => e.key === 'Enter' && handleRowClick(city)}
               aria-pressed={selectedCity === city}
             >
-              <RankNum>{globalRank}</RankNum>
+              <RankNum>{rank}</RankNum>
               <CityName>{city}</CityName>
               <BarWrap>
                 <BarBg>

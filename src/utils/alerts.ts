@@ -38,13 +38,46 @@ export function buildHourlyBuckets(alerts: NormalizedAlert[]): number[] {
   return hours
 }
 
-export function sortAlertsByDate(alerts: NormalizedAlert[], direction: 'asc' | 'desc' = 'desc') {
+function parseAlertDateToTime(alertDate: string): number {
+  if (!alertDate) return 0
+
+  // Try native Date parsing first (handles ISO-like formats)
+  const iso = new Date(alertDate)
+  if (!Number.isNaN(iso.getTime())) {
+    return iso.getTime()
+  }
+
+  // Try common dd/MM/yyyy HH:mm:ss format
+  const match = alertDate.match(
+    /(\d{2})\/(\d{2})\/(\d{4})[^\d]*(\d{2}):(\d{2}):(\d{2})/
+  )
+  if (match) {
+    const [, dd, MM, yyyy, hh, mm, ss] = match
+    const coerced = new Date(
+      `${yyyy}-${MM}-${dd}T${hh}:${mm}:${ss}`
+    )
+    if (!Number.isNaN(coerced.getTime())) {
+      return coerced.getTime()
+    }
+  }
+
+  return 0
+}
+
+export function sortAlertsByDate(
+  alerts: NormalizedAlert[],
+  direction: 'asc' | 'desc' = 'desc'
+) {
   return [...alerts].sort((a, b) => {
-    const cmp = a.alertDate.localeCompare(b.alertDate)
+    const ta = parseAlertDateToTime(a.alertDate)
+    const tb = parseAlertDateToTime(b.alertDate)
+    const cmp = ta - tb
     return direction === 'desc' ? -cmp : cmp
   })
 }
 
 export function getLatestAlertDate(alerts: NormalizedAlert[]): string {
-  return alerts.reduce((latest, a) => (a.alertDate > latest ? a.alertDate : latest), '')
+  if (alerts.length === 0) return ''
+  const sorted = sortAlertsByDate(alerts, 'desc')
+  return sorted[0]?.alertDate ?? ''
 }
