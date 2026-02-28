@@ -164,7 +164,7 @@ export function CityRankings({ cityStats, selectedCity, onSelectCity }: CityRank
       </SearchWrap>
 
       <List>
-        {visible.map(({ city, count }, idx) => {
+        {visible.map(({ city, count }) => {
           const globalRank = cityStats.findIndex(s => s.city === city) + 1
           return (
             <CityRow

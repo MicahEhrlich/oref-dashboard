@@ -1,6 +1,5 @@
 import { useState, useMemo } from 'react'
 import styled from 'styled-components'
-import { theme } from './styles/theme'
 import { GlobalStyle } from './styles/GlobalStyle'
 
 import { useAlerts } from './hooks/useAlerts'

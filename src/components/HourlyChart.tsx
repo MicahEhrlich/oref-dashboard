@@ -69,19 +69,6 @@ const BarLabel = styled.div`
   white-space: nowrap;
 `
 
-const Tooltip = styled.div`
-  position: absolute;
-  background: ${theme.colors.surface2};
-  border: 1px solid ${theme.colors.border};
-  border-radius: 6px;
-  padding: 4px 8px;
-  font-family: ${theme.fonts.mono};
-  font-size: 11px;
-  color: ${theme.colors.text};
-  pointer-events: none;
-  white-space: nowrap;
-`
-
 export function HourlyChart({ buckets, selectedCity }: HourlyChartProps) {
   const max = Math.max(...buckets, 1)
 
