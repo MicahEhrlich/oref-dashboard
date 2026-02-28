@@ -1,18 +1,10 @@
 import type { RawAlert } from '../types'
 
-const BASE_URL = import.meta.env.VITE_API_BASE_URL ?? 'https://www.oref.org.il'
-const ALERTS_PATH =
-  import.meta.env.VITE_ALERTS_PATH ?? '/warningMessages/alert/History/AlertsHistory.json'
+// Use same-origin proxy to avoid CORS (Vercel serverless in prod, Vite proxy in dev)
+const ALERTS_URL = '/api/alerts'
 
 export async function fetchAlerts(): Promise<RawAlert[]> {
-  const url = `${BASE_URL}${ALERTS_PATH}`
-
-  const res = await fetch(url, {
-    headers: {
-      'X-Requested-With': 'XMLHttpRequest',
-      Referer: BASE_URL,
-    },
-  })
+  const res = await fetch(ALERTS_URL)
 
   if (!res.ok) {
     throw new Error(`Failed to fetch alerts: HTTP ${res.status}`)
